@@ -127,12 +127,12 @@ namespace graph_coloring{
             if(max_color < c) max_color = c;
         }
         assert(check_solution());
-        print("Initialized with color num {}\n", max_color+1);
     }
 
     template<typename U>
     void Solver<U>::solve() {
-        init();
+        greedy_color();
+        print("Greedy colored the graph using {} colors", max_color+1);
     }
 
     template<typename U>

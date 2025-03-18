@@ -24,8 +24,9 @@ namespace graph_coloring{
 
         vector<array<string, 2>> edges;
         edges.reserve(edge_num);
-        for(auto i{0}; i<edge_num; ++i){
+        while(!ifs.eof()){
             ifs>>data;
+            if(ifs.eof())break;
             assert(data == "e");
             string source, target;
             ifs>>source>>target;

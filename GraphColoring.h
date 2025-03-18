@@ -14,7 +14,6 @@
 #include <limits>
 #include <ranges>
 #include <algorithm>
-#include <random>
 
 namespace graph_coloring{
     using csg::Graph;
@@ -30,20 +29,16 @@ namespace graph_coloring{
         Graph<string, U> graph;
         vector<U> color;
         vector<vector<U>> conflict_table;
-        std::mt19937 die;
         U max_color{0};
         U conflicts{0};
 
-        void init();
         void greedy_color();
-        void shrink_color_num();
-        void calc_conflict_table();
 
         [[nodiscard]] auto check_graph() const -> bool;
         [[nodiscard]] auto check_solution() const -> bool;
         [[nodiscard]] auto check_conflicts() const -> bool;
     public:
-        explicit Solver(vector<array<string, 2>>&&, unsigned int seed = 0);
+        explicit Solver(vector<array<string, 2>>&&);
 
         void solve();
     };
@@ -59,35 +54,6 @@ namespace graph_coloring{
             calculate_conflicts += conflict_row[color[v]];
         }
         return calculate_conflicts/2 == conflicts;
-    }
-
-    template<typename U>
-    void Solver<U>::calc_conflict_table() {
-        conflicts = 0;
-        for(U v{0}; v<graph.get_vertex_num(); ++v){
-            auto& ct_v_row {conflict_table[v]};
-            fill(ct_v_row, 0);
-            for(U n : graph.get_neighbors_id(v)) ++ct_v_row[color[n]];
-            conflicts += ct_v_row[color[v]];
-        }
-        conflicts /= 2;
-    }
-
-    template<typename U>
-    void Solver<U>::shrink_color_num() {
-        max_color--;
-        for(U& c : color){
-            if(c > max_color) c = die()%max_color;
-        }
-    }
-
-    template<typename U>
-    void Solver<U>::init() {
-        greedy_color();
-        conflict_table.resize(graph.get_vertex_num(), vector<U>(max_color));
-        shrink_color_num();
-        calc_conflict_table();
-        assert(check_conflicts());
     }
 
     template<typename U>
@@ -136,8 +102,7 @@ namespace graph_coloring{
     }
 
     template<typename U>
-    Solver<U>::Solver(vector<array<string, 2>>&& edges, unsigned int seed)
-    :die(seed){
+    Solver<U>::Solver(vector<array<string, 2>>&& edges){
         for(auto& edge_data : edges){
             graph.add_bdi_edge(edge_data[0], edge_data[1]);
         }

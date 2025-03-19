@@ -94,7 +94,9 @@ namespace graph_coloring{
         tmp_best_moves.clear();
         int best_delta{std::numeric_limits<int>::max()};
         for(U v{0}; v<graph.get_vertex_num(); ++v){
+            if (conflict_table[v][color[v]] == 0) {continue;}
             for(U c{0}; c<=max_color; ++c){
+                if (c == color[v]){continue;}
                 int delta {conflict_table[v][c] - conflict_table[v][color[v]]};
                 if(delta < best_delta){
                     tmp_best_moves.clear();

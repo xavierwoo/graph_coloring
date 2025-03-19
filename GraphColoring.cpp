@@ -16,9 +16,9 @@ namespace graph_coloring{
         string data;
         do{ifs>>data;}while(data != "edge");
         ifs>>data;
-        const uint64_t vertex_num {(uint64_t)stoll(data)};
+        const uint64_t vertex_num {static_cast<uint64_t>(stoll(data))};
         ifs>>data;
-        const uint64_t edge_num {(uint64_t)stoll(data)};
+        const uint64_t edge_num {static_cast<uint64_t>(stoll(data))};
 
         print("vertex num: {}, edge num: {}\n", vertex_num, edge_num);
 

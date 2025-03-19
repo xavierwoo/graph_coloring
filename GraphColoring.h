@@ -16,6 +16,7 @@
 #include <iostream>
 #include <ostream>
 #include <random>
+#include <ctime>
 
 namespace graph_coloring{
     using csg::Graph;
@@ -37,12 +38,13 @@ namespace graph_coloring{
         vector<U> color;
         vector<vector<U>> conflict_table;
         vector<vector<uint64_t>> tabu_table;
-        uint64_t tt_min{100};
-        uint64_t tt_extends{100};
+        uint64_t tt_min{10};
+        uint64_t tt_extends{10};
         uint64_t iteration{0};
         U max_color{0};
         U conflicts{0};
         U ever_least_conflicts{std::numeric_limits<U>::max()};
+        clock_t start_time{0};
 
         mutable vector<Move> tmp_best_moves;
         mutable vector<Move> tmp_best_tb_moves;
@@ -71,7 +73,6 @@ namespace graph_coloring{
     void Solver<U>::local_search() {
         for(;;++iteration){
             auto [mv, delta] {find_move()};
-            // if(delta > 0) break;
             make_move(mv, delta);
             if(conflicts == 0) return;
             assert(check_conflicts());
@@ -80,9 +81,6 @@ namespace graph_coloring{
 
     template<typename U>
     void Solver<U>::make_move(Move mv, const int delta) {
-        if (delta > 0) {
-            print("\tA backward move!\n");
-        }
         U prev_color{color[mv.vertex]};
 
         for(U n : graph.get_neighbors_id(mv.vertex)){
@@ -94,7 +92,7 @@ namespace graph_coloring{
         color[mv.vertex] = mv.to_color;
         conflicts += delta;
         if (conflicts < ever_least_conflicts) ever_least_conflicts = conflicts;
-        tabu_table[mv.vertex][prev_color] = iteration + tt_min + die()%tt_extends;
+        tabu_table[mv.vertex][prev_color] = iteration + conflicts + die()%tt_extends + 1;
     }
 
     /***
@@ -109,10 +107,9 @@ namespace graph_coloring{
 
         for(U v{0}; v<graph.get_vertex_num(); ++v){
             for(U c{0}; c<=max_color; ++c){
-                bool is_tabu{tabu_table[v][c] > iteration};
-                // if(is_tabu) {
-                //     print("checking a tabu move\n");
-                // }
+                if (c==color[v]){continue;}
+                if (conflict_table[v][color[v]] == 0) continue;
+                bool is_tabu{tabu_table[v][c] >= iteration};
                 auto& best_mvs {is_tabu?tmp_best_tb_moves:tmp_best_moves};
                 auto& best_d {is_tabu?best_tb_delta:best_delta};
                 if(const int delta {conflict_table[v][c] - conflict_table[v][color[v]]}
@@ -129,7 +126,7 @@ namespace graph_coloring{
         if (tmp_best_moves.empty()) {
             print("\tNo non-tabu move!\n");
             return pair(tmp_best_tb_moves[die()%tmp_best_tb_moves.size()], best_tb_delta);
-        }else if (best_tb_delta < best_delta && best_tb_delta + conflicts < ever_least_conflicts) {
+        }else if (best_tb_delta + conflicts < ever_least_conflicts && best_tb_delta < best_delta) {
             print("\tAspiration!\n");
             return pair(tmp_best_tb_moves[die()%tmp_best_tb_moves.size()], best_tb_delta);
         }else {
@@ -232,12 +229,14 @@ namespace graph_coloring{
 
     template<typename U>
     void Solver<U>::solve() {
+        start_time = std::clock();
         init();
         for(;;){
            local_search();
            if(conflicts > 0) break;
+           auto time_used{(std::clock() - start_time) / (double)CLOCKS_PER_SEC};
            check_solution();
-           print("Successfully find a {} coloring solution!\n", max_color+1);
+           print("Successfully find a {} coloring solution! using {} seconds, {} iterations\n", max_color+1, time_used, iteration);
            shrink_color_num();
            calc_conflict_table();
            reset_tabu_table();

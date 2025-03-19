@@ -106,9 +106,9 @@ namespace graph_coloring{
         int best_tb_delta{std::numeric_limits<int>::max()};
 
         for(U v{0}; v<graph.get_vertex_num(); ++v){
+            if (conflict_table[v][color[v]] == 0) continue;
             for(U c{0}; c<=max_color; ++c){
                 if (c==color[v]){continue;}
-                if (conflict_table[v][color[v]] == 0) continue;
                 bool is_tabu{tabu_table[v][c] >= iteration};
                 auto& best_mvs {is_tabu?tmp_best_tb_moves:tmp_best_moves};
                 auto& best_d {is_tabu?best_tb_delta:best_delta};

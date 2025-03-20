@@ -1,6 +1,6 @@
 # Graph Coloring local search based algorithm
 
-This is a educational repo storing the local search based algorithms for the Graph Coloring problem.
+This is an educational repo storing the local search based algorithms for the Graph Coloring problem.
 
 
 ## Current versions
@@ -16,3 +16,11 @@ There are several branches for different algorithms
 
 
 The vanilla_LS_v0.1.1 solves the instance DSJC500.5 with 49 colors in about 100 seconds.
+
+## Dependencies
+
+This repo uses the following dependencies:
+
+* compact_simple_graph v0.1.0. https://github.com/xavierwoo/compact_simple_graph.git
+* fmt 11.1.4. https://github.com/fmtlib/fmt.git
+ls

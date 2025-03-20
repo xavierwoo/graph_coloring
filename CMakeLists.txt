@@ -6,8 +6,8 @@ set(CMAKE_CXX_STANDARD 20)
 include(FetchContent)
 FetchContent_Declare(
         compact_simple_graph
-        GIT_REPOSITORY /Users/Xavier_1/CLionProjects/compact_simple_graph
-        GIT_TAG main  # Specify the Git tag here
+        GIT_REPOSITORY https://github.com/xavierwoo/compact_simple_graph.git
+        GIT_TAG v0.1.0  # Specify the Git tag here
 )
 
 FetchContent_Declare(

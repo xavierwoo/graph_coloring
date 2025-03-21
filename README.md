@@ -11,11 +11,11 @@ There are several branches for different algorithms
 |------------|-------------------|----------------------------------------------------------------------------------------------------------|
 | greedy     | greedy_v0.1.0     | The most simple greedy algorithm, used to generate the initialization configuration for other algorithms |
 | vanilla_LS | vanilla_LS_v0.1.2 | The vanilla local search                                                                                 |
-| vanilla_TS | vanilla_TS_v0.1.1 | The vanilla tabu search based from the vanilla local search                                              |
+| vanilla_TS | vanilla_TS_v0.1.2 | The vanilla tabu search based from the vanilla local search                                              |
 | main       | -                 | The working branch                                                                                       |
 
 
-The vanilla_LS_v0.1.1 solves the instance DSJC500.5 with 49 colors in about 100 seconds.
+The vanilla_TS_v0.1.2 solves the instance DSJC500.5 with 49 colors in about 100 seconds.
 
 ## Compile and Run
 

@@ -38,7 +38,6 @@ namespace graph_coloring{
         vector<U> color;
         vector<vector<U>> conflict_table;
         vector<vector<uint64_t>> tabu_table;
-        uint64_t tt_min{10};
         uint64_t tt_extends{10};
         uint64_t iteration{0};
         U max_color{0};
@@ -223,7 +222,7 @@ namespace graph_coloring{
             color[v] = c;
             if(max_color < c) max_color = c;
         }
-        assert(check_solution());
+        check_solution();
         print("Greedy find a {} coloring solution\n", max_color+1);
     }
 

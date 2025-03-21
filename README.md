@@ -15,7 +15,7 @@ There are several branches for different algorithms
 | main       | -                 | The working branch                                                                                       |
 
 
-The vanilla_LS_v0.1.1 solves the instance DSJC500.5 with 49 colors in about 100 seconds.
+The vanilla_TS_v0.1.1 solves the instance DSJC500.5 with 49 colors in about 100 seconds.
 
 ## Compile and Run
 

@@ -9,7 +9,7 @@ int main() {
         graph_coloring::Solver<uint8_t> solver(std::move(edges), 0);
         solver.solve();
     }else if (v_num < 65535){
-        graph_coloring::Solver<uint16_t> solver(std::move(edges), 4);
+        graph_coloring::Solver<uint16_t> solver(std::move(edges), 3);
         solver.solve();
     }else{
         std::cerr<<"Not supported yet\n";

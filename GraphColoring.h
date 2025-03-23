@@ -5,6 +5,7 @@
 #ifndef GRAPH_COLORING_GRAPH_COLORING_H
 #define GRAPH_COLORING_GRAPH_COLORING_H
 #include <csg/core.h>
+#include <cus/core.h>
 #include <string>
 #include <array>
 #include <vector>
@@ -20,6 +21,7 @@
 
 namespace graph_coloring{
     using csg::Graph;
+    using compact_uset::Set;
     using fmt::print;
     using std::string, std::vector, std::array, std::pair;
     using std::ranges::sort, std::ranges::fill;
@@ -38,6 +40,7 @@ namespace graph_coloring{
         vector<U> color;
         vector<vector<U>> conflict_table;
         vector<vector<uint64_t>> tabu_table;
+        Set<U> conflict_vertices;
         uint64_t tt_extends{10};
         uint64_t iteration{0};
         U max_color{0};
@@ -74,7 +77,6 @@ namespace graph_coloring{
             auto [mv, delta] {find_move()};
             make_move(mv, delta);
             if(conflicts == 0) return;
-            assert(check_conflicts());
         }
     }
 
@@ -86,12 +88,20 @@ namespace graph_coloring{
             auto& n_row {conflict_table[n]};
             --n_row[prev_color];
             ++n_row[mv.to_color];
+            if (n_row[color[n]] == 0) conflict_vertices.remove(n);
+            else conflict_vertices.insert(n);
         }
 
         color[mv.vertex] = mv.to_color;
         conflicts += delta;
         if (conflicts < ever_least_conflicts) ever_least_conflicts = conflicts;
         tabu_table[mv.vertex][prev_color] = iteration + conflicts + die()%tt_extends + 1;
+
+        //update conflict_vertices
+        auto v_conflict {conflict_table[mv.vertex][mv.to_color]};
+        if (v_conflict == 0) conflict_vertices.remove(mv.vertex);
+        else conflict_vertices.insert(mv.vertex);
+        assert(check_conflicts());
     }
 
     /***
@@ -103,9 +113,10 @@ namespace graph_coloring{
         tmp_best_tb_moves.clear();
         int best_delta{std::numeric_limits<int>::max()};
         int best_tb_delta{std::numeric_limits<int>::max()};
-
-        for(U v{0}; v<graph.get_vertex_num(); ++v){
-            if (conflict_table[v][color[v]] == 0) continue;// skip non conflict vertices
+        // for(U v{0}; v<graph.get_vertex_num(); ++v){
+        //     [[likely]]
+        //     if (conflict_table[v][color[v]] == 0) continue;// skip non conflict vertices
+        for (U v : conflict_vertices){
             for(U c{0}; c<=max_color; ++c){
                 if (c==color[v]) continue; //skip the current color
                 bool is_tabu{tabu_table[v][c] >= iteration};
@@ -142,6 +153,10 @@ namespace graph_coloring{
             for(U n : graph.get_neighbors_id(v))++conflict_row[color[n]];
             if(conflict_row != conflict_table[v]) return false;
             calculate_conflicts += conflict_row[color[v]];
+            if (conflict_row[color[v]] == 0 && conflict_vertices.contains(v))
+                return false;
+            if (conflict_row[color[v]] > 0 && !conflict_vertices.contains(v))
+                return false;
         }
         return calculate_conflicts/2 == conflicts;
     }
@@ -149,13 +164,19 @@ namespace graph_coloring{
     template<typename U>
     void Solver<U>::calc_conflict_table() {
         conflicts = 0;
+        conflict_vertices.clear();
         for(U v{0}; v<graph.get_vertex_num(); ++v){
             auto& ct_v_row {conflict_table[v]};
             fill(ct_v_row, 0);
             for(U n : graph.get_neighbors_id(v)) ++ct_v_row[color[n]];
-            conflicts += ct_v_row[color[v]];
+            auto v_conflict {ct_v_row[color[v]]};
+            if (v_conflict > 0) {
+                conflicts += ct_v_row[color[v]];
+                conflict_vertices.insert(v);
+            }
         }
         conflicts /= 2;
+        assert(check_conflicts());
     }
 
     template<typename U>
@@ -250,6 +271,7 @@ namespace graph_coloring{
         }
         graph.compile();
         assert(check_graph());
+        conflict_vertices.re_set(graph.get_vertex_num() - 1);
     }
 }
 #endif //GRAPH_COLORING_GRAPH_COLORING_H

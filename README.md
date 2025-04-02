@@ -11,40 +11,33 @@ There are several branches for different algorithms
 |------------|-------------------|----------------------------------------------------------------------------------------------------------|
 | greedy     | greedy_v0.1.0     | The most simple greedy algorithm, used to generate the initialization configuration for other algorithms |
 | vanilla_LS | vanilla_LS_v0.1.2 | The vanilla local search                                                                                 |
-| vanilla_TS | vanilla_TS_v0.1.1 | The vanilla tabu search based from the vanilla local search                                              |
+| vanilla_TS | vanilla_TS_v0.1.3 | The vanilla tabu search based from the vanilla local search                                              |
 | main       | -                 | The working branch                                                                                       |
 
 
-The vanilla_TS_v0.1.2 solves the instance DSJC500.5 with 49 colors in about 100 seconds.
+The vanilla_TS_v0.1.3 solves the instance DSJC500.5 with 49 colors in about 200 seconds.
 
 ## Compile and Run
 
 First make sure that you have git, make, cmake, and a c++20 compatible compiler installed in your machine.
 
-### 1. Clone the repo to local
+### 1. Clone the specific version to local
 
 ```bash
-$ git clone --no-checkout https://github.com/xavierwoo/graph_coloring.git
+git clone --branch <version_tag> https://github.com/xavierwoo/graph_coloring.git
 ```
 
-This command clones the repo to a folder named _graph_coloring_ in the current directory.
-Now change directory into it, run following command to get all branches and tags
+Replace <version_tag> to the version you are interested in.
+For example: 
 
 ```bash
-$ cd graph_coloring && git fetch --tags
+git clone --branch vanilla_TS_v0.1.3 https://github.com/xavierwoo/graph_coloring.git
 ```
 
+Or you can just clone the whole repo and checkout the specific version.
 
-### 2. Check out the version tag you want
 
-Check out the version.
-For example, we check out the 0.1.1 version for vanilla tabu search algorithm.
-
-```bash
-$ git checkout vanilla_TS_v0.1.1
-```
-
-### 3. Make a build directory for cmake
+### 2. Make a build directory for cmake
 
 Create a build directory, and cd into it
 
@@ -54,7 +47,7 @@ $ mkdir build && cd build
 
 This _build_ folder is for cmake.
 
-### 4. Create Makefile using cmake
+### 3. Create Makefile using cmake
 
 ```bash
 $ cmake -DCMAKE_BUILD_TYPE=Release ..
@@ -64,7 +57,7 @@ This command creates a Makefile for release build in the current directory (buil
 It should automatically download the dependencies.
 It may take some time according to your network condition.
 
-### 5. Build
+### 4. Build
 
 Use _make_ command to compile.
 
@@ -73,7 +66,7 @@ $ make
 ```
 This will create an executable file named _graph_coloring_ in this directory
 
-### 6. Run
+### 5. Run
 
 ```bash
 $ ./graph_coloring
@@ -87,5 +80,8 @@ This command run the compiled executable file
 This repo uses the following dependencies:
 
 * compact_simple_graph v0.1.0. https://github.com/xavierwoo/compact_simple_graph.git
+* compact_uset v0.4.0 https://github.com/xavierwoo/compact_uset.git
 * fmt 11.1.4. https://github.com/fmtlib/fmt.git
 
+CMake should have taken care of them.
+You don't have to download them if using CMake.

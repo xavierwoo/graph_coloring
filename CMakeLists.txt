@@ -11,16 +11,21 @@ FetchContent_Declare(
 )
 
 FetchContent_Declare(
+        compact_uset
+        GIT_REPOSITORY https://github.com/xavierwoo/compact_uset.git
+        GIT_TAG v0.4.0  # Specify the Git tag here
+)
+
+FetchContent_Declare(
         fmt
         GIT_REPOSITORY https://github.com/fmtlib/fmt.git
         GIT_TAG         11.1.4 # or a specific release tag
 )
 
-
-FetchContent_MakeAvailable(compact_simple_graph fmt)
+FetchContent_MakeAvailable(compact_simple_graph compact_uset fmt)
 
 add_executable(graph_coloring main.cpp
         GraphColoring.cpp
         GraphColoring.h)
 
-target_link_libraries(graph_coloring compact_simple_graph fmt::fmt)
+target_link_libraries(graph_coloring compact_simple_graph compact_uset fmt::fmt)

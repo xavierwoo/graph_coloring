@@ -12,6 +12,10 @@ namespace graph_coloring{
     using std::stoll;
     auto read_instance_file(const string& file) -> pair<uint64_t, vector<array<string, 2>>>{
         ifstream ifs(file);
+        if (!ifs.is_open()) {
+            std::cerr << "Could not open file " << file << std::endl;
+            std::abort();
+        }
         print("Reading file: {}\n", file);
         string data;
         do{ifs>>data;}while(data != "edge");

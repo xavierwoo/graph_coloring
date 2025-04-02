@@ -31,8 +31,8 @@ namespace graph_coloring{
     template<typename U>
     struct Solver{
         struct Move{
-            U vertex;
-            U to_color;
+            U vertex{std::numeric_limits<U>::max()};
+            U to_color{std::numeric_limits<U>::max()};
         };
 
     private:
@@ -46,10 +46,11 @@ namespace graph_coloring{
         U max_color{0};
         U conflicts{0};
         U ever_least_conflicts{std::numeric_limits<U>::max()};
+        U solved_color_number{std::numeric_limits<U>::max()};
         clock_t start_time{0};
+        double solved_time{std::numeric_limits<double>::infinity()};
 
         mutable vector<Move> tmp_best_moves;
-        mutable vector<Move> tmp_best_tb_moves;
         mutable std::mt19937 die;
 
         void init();
@@ -68,13 +69,18 @@ namespace graph_coloring{
     public:
 
         explicit Solver(vector<array<string, 2>>&&, unsigned int seed = 0);
-        void solve();
+        void solve(U);
+        auto get_solved_color_num_and_time() -> pair<U, double> {return {solved_color_number, solved_time};}
     };
 
     template<typename U>
     void Solver<U>::local_search() {
         for(;;++iteration){
             auto [mv, delta] {find_move()};
+            if (delta == std::numeric_limits<int>::max()) {
+                print("No moves in this iteration\n");
+                continue;
+            }
             make_move(mv, delta);
             if(conflicts == 0) return;
         }
@@ -110,36 +116,25 @@ namespace graph_coloring{
     template<typename U>
     auto Solver<U>::find_move() const -> pair<Move, int> {
         tmp_best_moves.clear();
-        tmp_best_tb_moves.clear();
         int best_delta{std::numeric_limits<int>::max()};
-        int best_tb_delta{std::numeric_limits<int>::max()};
-        // for(U v{0}; v<graph.get_vertex_num(); ++v){
-        //     [[likely]]
-        //     if (conflict_table[v][color[v]] == 0) continue;// skip non conflict vertices
         for (U v : conflict_vertices){
             for(U c{0}; c<=max_color; ++c){
                 if (c==color[v]) continue; //skip the current color
-                bool is_tabu{tabu_table[v][c] >= iteration};
-                auto& best_mvs {is_tabu?tmp_best_tb_moves:tmp_best_moves};
-                auto& best_d {is_tabu?best_tb_delta:best_delta};
-                if(const int delta {conflict_table[v][c] - conflict_table[v][color[v]]}
-                ; delta < best_d){
-                    best_mvs.clear();
-                    best_mvs.push_back({v,c});
-                    best_d = delta;
-                }else if(delta == best_d){
-                    best_mvs.push_back({v,c});
+                if (tabu_table[v][c] >= iteration){continue;}
+                if (const int delta {conflict_table[v][c] - conflict_table[v][color[v]]}
+                    ; delta < best_delta) {
+                    tmp_best_moves.clear();
+                    tmp_best_moves.push_back({v, c});
+                    best_delta = delta;
+                }else if (delta == best_delta) {
+                    tmp_best_moves.push_back({v, c});
                 }
             }
         }
 
-        if (tmp_best_moves.empty()) {
-            print("\tNo non-tabu move!\n");
-            return pair(tmp_best_tb_moves[die()%tmp_best_tb_moves.size()], best_tb_delta);
-        }else if (best_tb_delta + conflicts < ever_least_conflicts && best_tb_delta < best_delta) {
-            print("\tAspiration!\n");
-            return pair(tmp_best_tb_moves[die()%tmp_best_tb_moves.size()], best_tb_delta);
-        }else {
+        if (best_delta == std::numeric_limits<int>::max()) {
+            return pair(Move{}, best_delta);
+        }else[[likely]] {
             return pair(tmp_best_moves[die()%tmp_best_moves.size()], best_delta);
         }
     }
@@ -248,18 +243,20 @@ namespace graph_coloring{
     }
 
     template<typename U>
-    void Solver<U>::solve() {
+    void Solver<U>::solve(U lower_bound) {
         start_time = std::clock();
         init();
         for(;;){
-           local_search();
-           if(conflicts > 0) break;
-           auto time_used{(std::clock() - start_time) / (double)CLOCKS_PER_SEC};
-           check_solution();
-           print("Successfully find a {} coloring solution! using {} seconds, {} iterations\n", max_color+1, time_used, iteration);
-           shrink_color_num();
-           calc_conflict_table();
-           reset_tabu_table();
+            local_search();
+            if(conflicts > 0) break;
+            solved_time = (std::clock() - start_time) / static_cast<double>(CLOCKS_PER_SEC);
+            solved_color_number = max_color+1;
+            check_solution();
+            print("Successfully find a {} coloring solution! using {} seconds, {} iterations\n", max_color+1, solved_time, iteration);
+            if (max_color < lower_bound) return;
+            shrink_color_num();
+            calc_conflict_table();
+            reset_tabu_table();
         }
     }
 
